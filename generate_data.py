@@ -5,7 +5,7 @@ import numpy as np
 np.random.seed(42)
 
 # Generate 1000 samples
-n_samples = 1000
+n_samples = 2000
 
 data = {
     'customer_id': range(1, n_samples + 1),
