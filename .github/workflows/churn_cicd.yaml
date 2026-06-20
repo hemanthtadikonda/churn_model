@@ -10,7 +10,7 @@ env:
 
 jobs:
   train-and-deploy:
-    runs-on: 'ubnutu-latest'
+    runs-on: 'ubuntu-latest'
     permissions:
       contents: write
     
