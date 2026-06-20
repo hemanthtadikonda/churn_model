@@ -21,7 +21,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Set Up Pythons
-        uses: actions/python@v4
+        uses: actions/setup-python@v4
         with:
           version: '3.11'
 
