@@ -33,4 +33,4 @@ jobs:
         run: python3 generate_data.py
 
       - name: Train Model
-        run: python3 tain.py
+        run: python3 train.py
