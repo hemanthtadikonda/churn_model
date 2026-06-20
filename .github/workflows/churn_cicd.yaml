@@ -1,0 +1,36 @@
+name: Churn ML Pipeline
+
+on:
+  push:
+    branches: ['cicd']
+
+env: 
+  AWS_REGION: 'us-east-1'
+  S3_BUCKET: 'churn-tad-datasets-cicd'
+
+jobs:
+  train-and-deploy:
+    runs-on: 'ubnutu-latest'
+    permissions:
+      contents: write
+    
+    Steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} 
+
+      - name: Set Up Pythons
+        uses: actions/python@v4
+        with:
+          version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+        
+      - name: Generate datasets
+        run: python3 generate_data.py
+
+      - name: Train Model
+        run: python3 tain.py
