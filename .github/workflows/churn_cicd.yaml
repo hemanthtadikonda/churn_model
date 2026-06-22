@@ -2,35 +2,60 @@ name: Churn ML Pipeline
 
 on:
   push:
-    branches: ['cicd']
+    branches: [ 'cicd']
 
-env: 
-  AWS_REGION: 'us-east-1'
-  S3_BUCKET: 'churn-tad-datasets-cicd'
+env:
+  AWS_REGION: us-east-1
+  S3_BUCKET: tad-churn-datasets
 
 jobs:
-  train-and-deploy:
-    runs-on: 'ubuntu-latest'
+  train and deploy:
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/Checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} 
-
-      - name: Set Up Pythons
-        uses: actions/setup-python@v4
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v6 
         with:
-          version: '3.11'
-
+          python-version: '3.11'
+      
       - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
-        
-      - name: Generate datasets
+        run: | 
+          pip install -r requirments.txt
+
+      - name: Generate dataset
         run: python3 generate_data.py
 
       - name: Train Model
-        run: python3 train.py
+        rund: python3 train.py
+
+      - name: Configure AWS Credentainls
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Push model to S3 directly
+        run: |
+          aws s3 cp models/churn_model.pkl s3://tad-churn-datasets/models/churn_model.pkl
+          echo "Model pushed to S3 is success"
+
+      - name: Update inference.yaml with S3 model path
+        run: |
+          MODEL_URI="s3://churn-model-bucket-cicd-abhi/models/churn_model.pkl"
+          sed -i "s|storageUri: .*|storageUri: $MODEL_URI|g" k8s/inference.yaml
+      
+      - name: Commit updated inference.yaml
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add k8s/inference.yaml
+          git commit -m "Update model S3 path [skip ci]" || echo "No changes"
+          git push || echo "No changes to push"
