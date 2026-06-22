@@ -33,7 +33,7 @@ jobs:
         run: python3 generate_data.py
 
       - name: Train Model
-        rund: python3 train.py
+        run: python3 train.py
 
       - name: Configure AWS Credentainls
         uses: aws-actions/configure-aws-credentials@v6.1.0
