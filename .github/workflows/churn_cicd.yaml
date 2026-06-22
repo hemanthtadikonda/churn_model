@@ -9,7 +9,7 @@ env:
   S3_BUCKET: tad-churn-datasets
 
 jobs:
-  train and deploy:
+  train-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
