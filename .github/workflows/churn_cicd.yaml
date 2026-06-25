@@ -3,6 +3,10 @@ name: Churn ML Pipeline
 on:
   push:
     branches: [ 'cicd']
+  paths-ignore:
+    - '**/*.md'
+    - '**/*.yaml'
+
 
 env:
   AWS_REGION: us-east-1
