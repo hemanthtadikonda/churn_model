@@ -2,10 +2,11 @@ name: Churn ML Pipeline
 
 on:
   push:
-    branches: [ 'cicd']
-  paths-ignore:
-    - '**/*.md'
-    - '**/*.yaml'
+    branches: 
+      - cicd
+    paths-ignore:
+      - '**/*.md'
+      - 'k8s/**'
 
 
 env:
