@@ -38,6 +38,11 @@ jobs:
       - name: Generate dataset
         run: python3 generate_data.py
 
+      - name: Verify AWS Access
+        run: |
+          aws sts get-caller-identity
+          env | grep AWS || true
+
       - name: Train Model
         run: python3 train.py
         env:
