@@ -12,6 +12,7 @@ on:
 env:
   AWS_REGION: us-east-1
   S3_BUCKET: tad-churn-datasets
+  MLFLOW_TRACKING_URI: "http://35.175.226.12:5001"
 
 jobs:
   train-and-deploy:
@@ -21,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/Checkout@v4
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       
@@ -39,6 +40,8 @@ jobs:
 
       - name: Train Model
         run: python3 train.py
+        env:
+          MLFLOW_TRACKING_URI: ${{ env.MLFLOW_TRACKING_URI }}
 
       - name: Configure AWS Credentainls
         uses: aws-actions/configure-aws-credentials@v6.1.0
