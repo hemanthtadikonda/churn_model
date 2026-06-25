@@ -163,6 +163,7 @@ Install MLflow using SQLite backend:
 helm install mlflow community-charts/mlflow \
   --namespace mlflow \
   --set backendStore.defaultSqlitePath=/tmp/mlflow.db
+  --set extraArgs.allowed-hosts="*"
 ```
 
 ---
@@ -203,7 +204,7 @@ Port forward:
 
 ```bash
 kubectl port-forward pod/$POD_NAME \
-5001:5000 \
+5000:5000 \
 -n mlflow \
 --address 0.0.0.0
 ```
@@ -313,3 +314,123 @@ MLflow Server
 ```
 
 This architecture provides persistence, scalability, backup, and multi-user support.
+
+# Configure S3 Artifact Storage
+
+MLflow stores:
+
+* Metrics
+* Parameters
+* Experiments
+* Models
+* Datasets
+* Artifacts
+
+By default, artifacts are stored locally inside the MLflow container.
+
+For production environments, configure Amazon S3 as the artifact store.
+
+---
+
+## Create AWS Credentials Secret
+
+Create a Kubernetes Secret containing AWS credentials.
+
+```bash
+kubectl create secret generic mlflow-s3-secret \
+  -n mlflow \
+  --from-literal=AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID> \
+  --from-literal=AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
+```
+
+Verify:
+
+```bash
+kubectl get secret mlflow-s3-secret -n mlflow
+```
+
+Expected:
+
+```text
+NAME               TYPE     DATA
+mlflow-s3-secret   Opaque   2
+```
+
+---
+
+## Configure MLflow for S3
+
+Download chart values:
+
+```bash
+helm show values community-charts/mlflow > values.yaml
+```
+
+Locate the `artifactRoot.s3` section and update:
+
+```yaml
+artifactRoot:
+  s3:
+    enabled: true
+
+    bucket: tad-churn-datasets
+
+    existingSecret:
+      name: mlflow-s3-secret
+      keyOfAccessKeyId: AWS_ACCESS_KEY_ID
+      keyOfSecretAccessKey: AWS_SECRET_ACCESS_KEY
+```
+
+---
+
+## Upgrade MLflow Deployment
+
+```bash
+helm upgrade mlflow community-charts/mlflow \
+  -n mlflow \
+  -f values.yaml
+```
+
+---
+
+## Verify Environment Variables
+
+Check whether AWS credentials are injected into the pod.
+
+```bash
+kubectl exec -it deploy/mlflow -n mlflow -- env | grep AWS
+```
+
+Expected:
+
+```text
+AWS_ACCESS_KEY_ID=xxxxxxxx
+AWS_SECRET_ACCESS_KEY=xxxxxxxx
+```
+
+---
+
+# Verify Artifact Storage
+
+Create a test experiment from a client machine.
+
+Example:
+
+```python
+import mlflow
+
+mlflow.set_tracking_uri("http://<SERVER-IP>:5001")
+
+with mlflow.start_run():
+    mlflow.log_param("test", "value")
+```
+
+Verify in MLflow UI:
+
+```text
+Experiments -> Runs -> Artifacts
+```
+
+Artifacts should appear successfully.
+
+---
