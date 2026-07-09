@@ -12,7 +12,7 @@ on:
 env:
   AWS_REGION: us-east-1
   S3_BUCKET: tad-churn-datasets
-  MLFLOW_TRACKING_URI: "http://35.175.226.12:5001"
+  MLFLOW_TRACKING_URI: "http://54.166.215.199:5000"
 
 jobs:
   train-and-deploy:
